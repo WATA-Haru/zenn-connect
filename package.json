@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"new": "npx zenn new:article",
-	"preview": "npx zenn preview"
+    "new": "npx zenn new:article",
+    "preview": "npx zenn preview"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/WATA-Haru/zenn-connect#readme",
   "dependencies": {
-    "zenn-cli": "^0.1.162"
+    "zenn-cli": "^0.2.10"
   }
 }
