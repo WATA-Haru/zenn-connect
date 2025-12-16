@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/WATA-Haru/zenn-connect#readme",
   "dependencies": {
-    "zenn-cli": "^0.2.10"
+    "zenn-cli": "^0.2.11"
   }
 }
