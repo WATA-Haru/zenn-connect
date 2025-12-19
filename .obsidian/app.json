@@ -1,4 +1,6 @@
 {
   "useMarkdownLinks": true,
-  "vimMode": true
+  "vimMode": true,
+  "newLinkFormat": "absolute",
+  "alwaysUpdateLinks": true
 }
