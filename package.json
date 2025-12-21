@@ -10,7 +10,7 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "articles/*.md": ["textlint", "markdownlint"]
+    "articles/*.md": ["textlint", "markdownlint-cli2"]
   },
   "repository": {
     "type": "git",
