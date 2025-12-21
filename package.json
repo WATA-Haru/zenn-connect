@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "new": "npx zenn new:article",
-    "preview": "npx zenn preview"
+    "preview": "npx zenn preview",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "articles/*.md": ["textlint", "markdownlint"]
   },
   "repository": {
     "type": "git",
@@ -22,5 +26,14 @@
   "homepage": "https://github.com/WATA-Haru/zenn-connect#readme",
   "dependencies": {
     "zenn-cli": "^0.2.11"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "markdownlint-cli2": "^0.20.0",
+    "textlint": "^15.5.0",
+    "textlint-filter-rule-allowlist": "^4.0.0",
+    "textlint-filter-rule-comments": "^1.2.2",
+    "textlint-rule-preset-ja-technical-writing": "^12.0.2"
   }
 }
