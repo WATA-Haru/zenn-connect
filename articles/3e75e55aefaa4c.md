@@ -1,0 +1,241 @@
+---
+title: autoinstall.yamlでUbuntu 24.04 LTSの設定を半自動化する
+emoji: 🐧
+type: tech
+topics:
+  - ubuntu
+published: false
+publication_name: bita
+---
+## はじめに
+
+Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使って初期設定する画面がUbuntuインストーラーに追加されました。[^1]
+これが便利だったため、私が`autoinstall.yaml`からUbuntu Desktop 24.04.3 LTSの初期設定をした際の手順を紹介します。
+
+本記事では「Ubuntu Desktop 24.04.3 LTS」を「Ubuntu」と表記します。
+また、`autoinstall.yaml`の設定項目に行くまでは手動で設定する必要があるため、本記事のタイトルでは半自動と表現しています。
+<!-- textlint-disable ja-technical-writing/ja-no-mixed-period -->
+:::message
+`autoinstall.yaml`を使う際、Ubuntuをインストールするマシンのほかに、ローカルでhttpサーバを立てるためのマシンが必要になります。
+:::
+<!-- textlint-enable ja-technical-writing/ja-no-mixed-period -->
+
+[^1]: [Ubuntu 24.04 LTS (Noble Numbat) Release Notes - Project Discussion / Release - Ubuntu Community Hub](https://discourse.ubuntu.com/t/ubuntu-24-04-lts-noble-numbat-release-notes/39890#p-99950-installer-and-upgrades)
+
+### 本記事で扱う内容
+
+- `autoinstall.yaml`の使い方
+- `autoinstall.yaml`を使ったUbuntuの設定方法の紹介
+  - 具体的には、ユーザ作成・タイムゾーン設定・キーボード設定・ストレージ設定・`apt`のパッケージインストール自動化
+
+### 本記事で扱わない内容
+
+- パーティション分割を伴うストレージの設定
+- ネットワークの設定
+- [サンプル設定](https://github.com/WATA-Haru/dotfiles/blob/2909bb328e6703c926de7e157986fcc26dfb07d8/ubuntu/autoinstall.sample.yaml)(後述)に書いていない項目の設定
+
+## 筆者の`autoinstall.yaml`サンプル設定
+
+サンプル設定だけ見たい方はこちらをご覧ください。
+@[card](https://github.com/WATA-Haru/dotfiles/blob/2909bb328e6703c926de7e157986fcc26dfb07d8/ubuntu/autoinstall.sample.yaml)
+
+## Ubuntuの`autoinstall.yaml`機能の概要
+<!-- textlint-disable ja-technical-writing/ja-no-redundant-expression -->
+Ubuntuをインストールした際、インストーラーを使って初期設定を行うと、途中で以下のような画面が表示されます。
+<!-- textlint-enable ja-technical-writing/ja-no-redundant-expression -->
+
+![対話式インストールと自動インストールの選択画面](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766591650939.webp)
+
+ここで「自動インストール」を選択するとYAMLファイルからマシンの初期設定ができます。
+
+## `autoinstall.yaml`の設定
+
+設定できるプロパティは`autoinstall.yaml`の公式ドキュメントをご覧ください。
+@[card](https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html)
+
+ここでは、私が作成した`autoinstall.sample.yaml`に沿って設定方法を紹介します。すべて解説すると長いので、重要な点だけ解説します。
+@[card](https://github.com/WATA-Haru/dotfiles/blob/2909bb328e6703c926de7e157986fcc26dfb07d8/ubuntu/autoinstall.sample.yaml)
+
+### source
+
+`ubuntu-desktop`か`ubuntu-desktop-minimal`を選択できます。
+`ubuntu-desktop`はlibreofficeやthunderbirdなどを含みますが、私は使わないので`minimal`の方を選択しました。詳しい違いを知りたい方は以下を参照してください。
+
+ [What is the difference between Ubuntu 24.04 Default (minimal) installation and Full installation? - Ask Ubuntu](https://askubuntu.com/questions/1511204/what-is-the-difference-between-ubuntu-24-04-default-minimal-installation-and-f)
+
+### identity
+
+[公式ドキュメント](https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html#ai-identity)の設定を見ると、`realname`と`password`がシングルクォーテーション(`'`)で囲われているので、それに従って設定します。
+
+```yaml: autoinstall.sample.yaml
+  identity:
+    hostname: ubuntu-desktop
+    realname: '<your-name>'
+    username: <your-name>
+    password: '<your-password>'
+```
+
+注意点として、`password`を暗号化する必要があります。
+私は[こちら](https://gihyo.jp/admin/serial/01/ubuntu-recipe/0818)に書いてあるのと同じ方法で、以下のコマンドで暗号化しました。
+
+```shell
+openssl passwd -6 <your-password>
+```
+
+暗号化された出力結果を`password`に記載します。なお、暗号化前のパスワードをログインする際に求められるので忘れないようにしましょう。
+
+### packages
+
+ここに入力したパッケージがインストール時に自動でインストールされます。
+開発で絶対に使うようなパッケージは記載するとよいでしょう。
+
+```yaml: autoinstall.yaml
+  packages:
+    - build-essential
+    - ca-certificates
+    - net-tools
+    - gnupg
+    - curl
+    - wget
+    - git
+    - gh
+    - zip
+    - unzip
+    - vim
+    - tree
+```
+
+### storage
+
+`storage`の設定を記載します。
+今回はストレージをまるごと使用するので、`sizing-policy`に`all`を設定します。
+`password`ですが、これは**暗号化が必要ありません**。
+
+```yaml: autoinstall.yaml
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+      password: <your-password>
+```
+
+### late-commands
+
+Ubuntuのインストーラーは、インストールが正常に完了した後、更新とパッケージインストールを行います。その後、システムが再起動します。`late-commands`は、このシステムが再起動する直前に実行されるシェルコマンドです。
+
+`curtin in-target`の後に続けてコマンドを書くとそれが実行されます。
+今回は特にする処理もなかったので、aptのupdateだけを行っています。
+
+```yaml: autoinstall.yaml
+  late-commands:
+    - curtin in-target -- apt update -y
+```
+
+## `autoinstall.yaml`を使用する手順
+
+ここでは、先ほど作った`autoinstall.yaml`を読み込むまでの手順を解説します。
+なお、インストールメディアの作成やBootMenuからの起動についての詳細はここで説明しません。
+
+### Ubuntuのインストールから`autoinstall.yaml`の読み込み画面まで
+
+Ubuntuをインストールメディアから起動し、Try or Install UbuntuでUbuntuをインストールします。
+![Boot MenuでTry or Install Ubuntuを選択](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766579523054.webp)
+*Boot MenuでTry or Install Ubuntuを選択*
+
+Ubuntuのインストーラーが立ち上がるので指示に沿って進みます。
+ここでキーボード設定や言語設定をしても、後から`autoinstall.yaml`の設定で上書きされます。ただし、Wi-Fiの設定のように上書きされないものもあります。
+
+![Ubuntuのインストーラーの初期設定画面|439x340](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766591903902.webp =450x)
+
+ローカルのhttpサーバから`autoinstall.yaml`を読み込むため、ネットワークの設定は必ずしてください。
+![インターネットの接続方法を選択する画面](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766592090113.webp =450x)
+
+インストーラーの指示に従うと、一度インストーラーを閉じることになります。
+いったん閉じたらインストーラーを再度立ち上げます。
+
+そのまま進むと「対話式インストール」と「自動インストール(`autoinstall.yaml`)」を選択する画面が出てくるので、自動インストールを選択します。
+
+![対話式インストールと自動インストールの選択画面で自動インストールを選択する様子](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766592414419.webp =450x)
+*自動インストールを選択*
+
+### ローカルのhttpサーバを立てて`autoinstall.yaml`をUbuntu側から読み取り可能にする
+
+Ubuntu側から`autoinstall.yaml`を読み込むために、ローカルでhttpサーバを立てるための別のマシンが必要になります。以下の作業はUbuntuのインストール作業をしていない方のマシンで行います。
+
+本記事ではWindowsのターミナル上でpythonを使ってhttpサーバを立てる例を紹介します。OSによってコマンドが異なるため、適宜自分のマシンに読み替えてください。
+
+まずはターミナルから`cd`で`autoinstall.yaml`が置いてあるディレクトリに移動します。以下のように`autoinstall.yaml`があることを確認します。
+
+```shell
+PS C:\Users\name\dotfiles\ubuntu> ls
+
+
+    Directory: C:\Users\name\dotfiles\ubuntu
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2025/12/24     20:51            659 autoinstall.sample.yaml
+-a----        2025/12/23      2:44            744 autoinstall.yaml
+```
+
+次に、自分のネットワークのIPv4アドレスを調べます。Windowsの場合は`ipconfig`を実行します。
+
+```shell
+PS C:\Users\name\dotfiles\ubuntu> ipconfig
+
+Wireless LAN adapter Wi-Fi:
+
+   Connection-specific DNS Suffix  . : <location>
+   Link-local IPv6 Address . . . . . : <address>
+   IPv4 Address. . . . . . . . . . . : 192.168.0.24
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.0.1
+# 略
+```
+
+実行結果から、IPv4 Addressが`192.168.0.24`だと分かりました。
+次に、pythonでローカルのhttpサーバを立てます。
+
+```shell
+python -m http.server 8080
+```
+
+これで、他のローカルデバイスから`http://192.168.0.24:8080/autoinstall.yaml`にアクセスすると`autoinstall.yaml`の内容を読み取ることができるようになりました。
+(他のデバイスから読み取る際はローカルサーバを起動させたままにしてください。)
+
+### `autoinstall.yaml`から自動設定
+
+Ubuntuのインストール作業をしているマシンに戻ります。
+`autoinstall.yaml`をネットワーク経由で読み取るため、ローカルサーバのURLを入力します。
+ここでは`http://192.168.0.24:8080/autoinstall.yaml`を入力します。
+
+![ローカルサーバ上のautoinstall.yamlを入力](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766594338173.webp =450x)
+*ローカルサーバ上のautoinstall.yamlから読み取る*
+
+以下のように`autoinstall.yaml`の確認画面が出るので、不備がないか確認して問題なければインストールに進みます。
+
+![autoinstall.yamlの内容確認画面](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766594555609.webp =450x)
+*autoinstall.yamlの内容確認画面*
+
+ここからはしばらく待ちます。もしエラーがある場合は以下の画像のようにエラーメッセージが表示されます。
+![インストールのエラーメッセージ](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766596326412.webp =450x)
+
+`autoinstall.yaml`で設定した後はデフォルトで再起動するようになっているので、インストール作業完了後は自動で再起動されて設定が反映されます。
+
+`autoinstall.yaml`を使った初期設定はこれで以上です。
+
+## おわりに
+
+今回試した`autoinstall.yaml`は設定をコードで管理できる上に、覚えることも少ないため非常に便利です。
+<!-- textlint-disable ja-technical-writing/ja-no-doubled-joshi -->
+ただ、`autoinstall.yaml`は時間が経ってからインストールの失敗がわかり、トライアンドエラーがしにくいため、`autoinstall.yaml`には絶対に使う設定だけを書き、インストール後に自前のスクリプトで環境設定をするのがよいと考えています。
+<!-- textlint-enable ja-technical-writing/ja-no-doubled-joshi -->
+
+## 参考
+
+@[card](https://gihyo.jp/admin/serial/01/ubuntu-recipe/0818)
+
+@[card](https://github.com/WATA-Haru/dotfiles/blob/2909bb328e6703c926de7e157986fcc26dfb07d8/ubuntu/autoinstall.sample.yaml)
+
+@[card](https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html)
