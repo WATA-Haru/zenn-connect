@@ -1,5 +1,5 @@
 ---
-title: autoinstall.yamlでUbuntu 24.04 LTSの設定を半自動化する
+title: autoinstall.yamlでUbuntu 24.04 LTSの初期設定を半自動化する
 emoji: 🐧
 type: tech
 topics:
@@ -9,11 +9,11 @@ publication_name: bita
 ---
 ## はじめに
 
-Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使って初期設定する画面がUbuntuインストーラーに追加されました。[^1]
-これが便利だったため、私が`autoinstall.yaml`からUbuntu Desktop 24.04.3 LTSの初期設定をした際の手順を紹介します。
+Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使った初期設定の自動化が追加されました。[^1]
+本記事では、私が`autoinstall.yaml`からUbuntu Desktop 24.04.3 LTSの初期設定をした際の手順と`autoinstall.yaml`の作り方を紹介します。
 
-本記事では「Ubuntu Desktop 24.04.3 LTS」を「Ubuntu」と表記します。
-また、`autoinstall.yaml`の設定項目に行くまでは手動で設定する必要があるため、本記事のタイトルでは半自動と表現しています。
+なお、これからの文章では「Ubuntu Desktop 24.04.3 LTS」を「Ubuntu」と表記します。
+タイトルの「半自動」は、`autoinstall.yaml`の設定項目に行くまでは手動で設定する必要があるためそのように表現しています。
 <!-- textlint-disable ja-technical-writing/ja-no-mixed-period -->
 :::message
 `autoinstall.yaml`を使う際、Ubuntuをインストールするマシンのほかに、ローカルでhttpサーバを立てるためのマシンが必要になります。
@@ -25,8 +25,8 @@ Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使って初期設定す�
 ### 本記事で扱う内容
 
 - `autoinstall.yaml`の使い方
-- `autoinstall.yaml`を使ったUbuntuの設定方法の紹介
-  - 具体的には、ユーザ作成・タイムゾーン設定・キーボード設定・ストレージ設定・`apt`のパッケージインストール自動化
+- `autoinstall.yaml`を使ったUbuntuの設定方法
+  - 具体的には、ユーザ作成・タイムゾーン設定・キーボード設定・ストレージ設定・パッケージインストール・インストール後に実行されるスクリプト
 
 ### 本記事で扱わない内容
 
@@ -40,20 +40,18 @@ Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使って初期設定す�
 @[card](https://github.com/WATA-Haru/dotfiles/blob/2909bb328e6703c926de7e157986fcc26dfb07d8/ubuntu/autoinstall.sample.yaml)
 
 ## Ubuntuの`autoinstall.yaml`機能の概要
-<!-- textlint-disable ja-technical-writing/ja-no-redundant-expression -->
-Ubuntuをインストールした際、インストーラーを使って初期設定を行うと、途中で以下のような画面が表示されます。
-<!-- textlint-enable ja-technical-writing/ja-no-redundant-expression -->
+
+Ubuntuインストーラーを使った初期設定では、途中に以下のような画面が表示されます。
+ここで「自動インストール」を選択するとYAMLファイルからマシンの初期設定ができます。
 
 ![対話式インストールと自動インストールの選択画面](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766591650939.webp)
 
-ここで「自動インストール」を選択するとYAMLファイルからマシンの初期設定ができます。
-
 ## `autoinstall.yaml`の設定
 
-設定できるプロパティは`autoinstall.yaml`の公式ドキュメントをご覧ください。
+設定できるすべての項目は`autoinstall.yaml`の公式ドキュメントをご覧ください。
 @[card](https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html)
 
-ここでは、私が作成した`autoinstall.sample.yaml`に沿って設定方法を紹介します。すべて解説すると長いので、重要な点だけ解説します。
+ここでは、私が作成した`autoinstall.sample.yaml`に沿って設定を紹介します。すべて解説すると長いので、重要な点だけ解説します。
 @[card](https://github.com/WATA-Haru/dotfiles/blob/2909bb328e6703c926de7e157986fcc26dfb07d8/ubuntu/autoinstall.sample.yaml)
 
 ### source
@@ -82,7 +80,7 @@ Ubuntuをインストールした際、インストーラーを使って初期�
 openssl passwd -6 <your-password>
 ```
 
-暗号化された出力結果を`password`に記載します。なお、暗号化前のパスワードをログインする際に求められるので忘れないようにしましょう。
+その後、暗号化された出力結果を`password`に記載します。暗号化前のパスワードはログインする際に求められるので忘れないようにしましょう。
 
 ### packages
 
@@ -134,7 +132,7 @@ Ubuntuのインストーラーは、インストールが正常に完了した�
 ## `autoinstall.yaml`を使用する手順
 
 ここでは、先ほど作った`autoinstall.yaml`を読み込むまでの手順を解説します。
-なお、インストールメディアの作成やBootMenuからの起動についての詳細はここで説明しません。
+なお、インストールメディアの作成やBootMenuからの起動についての詳細は説明しません。
 
 ### Ubuntuのインストールから`autoinstall.yaml`の読み込み画面まで
 
@@ -143,7 +141,7 @@ Ubuntuをインストールメディアから起動し、Try or Install Ubuntu�
 *Boot MenuでTry or Install Ubuntuを選択*
 
 Ubuntuのインストーラーが立ち上がるので指示に沿って進みます。
-ここでキーボード設定や言語設定をしても、後から`autoinstall.yaml`の設定で上書きされます。ただし、Wi-Fiの設定のように上書きされないものもあります。
+なお、ここでキーボード設定や言語設定をしても、後から`autoinstall.yaml`の設定で上書きされます。
 
 ![Ubuntuのインストーラーの初期設定画面|439x340](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766591903902.webp =450x)
 
@@ -158,11 +156,11 @@ Ubuntuのインストーラーが立ち上がるので指示に沿って進み�
 ![対話式インストールと自動インストールの選択画面で自動インストールを選択する様子](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766592414419.webp =450x)
 *自動インストールを選択*
 
-### ローカルのhttpサーバを立てて`autoinstall.yaml`をUbuntu側から読み取り可能にする
+### ローカルにhttpサーバを立てて`autoinstall.yaml`をUbuntu側から読み取り可能にする
 
-Ubuntu側から`autoinstall.yaml`を読み込むために、ローカルでhttpサーバを立てるための別のマシンが必要になります。以下の作業はUbuntuのインストール作業をしていない方のマシンで行います。
+Ubuntu側から`autoinstall.yaml`を読み込むために、ローカルでhttpサーバを立てる別のマシンが必要になります。そのため、以下の作業はUbuntuのインストール作業をしていない方のマシンで行います。
 
-本記事ではWindowsのターミナル上でpythonを使ってhttpサーバを立てる例を紹介します。OSによってコマンドが異なるため、適宜自分のマシンに読み替えてください。
+本記事では、Windowsのターミナル上でpythonを使ってhttpサーバを立てる例を紹介します。OSによってコマンドが異なるため、適宜自分のマシンに読み替えてください。
 
 まずはターミナルから`cd`で`autoinstall.yaml`が置いてあるディレクトリに移動します。以下のように`autoinstall.yaml`があることを確認します。
 
@@ -179,7 +177,7 @@ Mode                 LastWriteTime         Length Name
 -a----        2025/12/23      2:44            744 autoinstall.yaml
 ```
 
-次に、自分のネットワークのIPv4アドレスを調べます。Windowsの場合は`ipconfig`を実行します。
+次に、ローカルネットワークのIPv4アドレスを調べます。Windowsの場合は`ipconfig`を実行します。
 
 ```shell
 PS C:\Users\name\dotfiles\ubuntu> ipconfig
@@ -211,7 +209,7 @@ Ubuntuのインストール作業をしているマシンに戻ります。
 ここでは`http://192.168.0.24:8080/autoinstall.yaml`を入力します。
 
 ![ローカルサーバ上のautoinstall.yamlを入力](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766594338173.webp =450x)
-*ローカルサーバ上のautoinstall.yamlから読み取る*
+*ローカルサーバ上のautoinstall.yamlを読み取る*
 
 以下のように`autoinstall.yaml`の確認画面が出るので、不備がないか確認して問題なければインストールに進みます。
 
@@ -221,16 +219,16 @@ Ubuntuのインストール作業をしているマシンに戻ります。
 ここからはしばらく待ちます。もしエラーがある場合は以下の画像のようにエラーメッセージが表示されます。
 ![インストールのエラーメッセージ](/images/3e75e55aefaa4c/3e75e55aefaa4c-1766596326412.webp =450x)
 
-`autoinstall.yaml`で設定した後はデフォルトで再起動するようになっているので、インストール作業完了後は自動で再起動されて設定が反映されます。
+`autoinstall.yaml`で設定した後は何も設定していなければ、自動で再起動されて設定が反映されます。
 
-`autoinstall.yaml`を使った初期設定はこれで以上です。
+設定はこれで以上です。
 
 ## おわりに
-
-今回試した`autoinstall.yaml`は設定をコードで管理できる上に、覚えることも少ないため非常に便利です。
 <!-- textlint-disable ja-technical-writing/ja-no-doubled-joshi -->
-ただ、`autoinstall.yaml`は時間が経ってからインストールの失敗がわかり、トライアンドエラーがしにくいため、`autoinstall.yaml`には絶対に使う設定だけを書き、インストール後に自前のスクリプトで環境設定をするのがよいと考えています。
+`autoinstall.yaml`は時間が経ってからインストールの失敗がわかり、トライアンドエラーがしにくいため、`autoinstall.yaml`には絶対に使う設定だけを書き、インストール後に自前のスクリプトで環境設定をするのがよいと感じました。
 <!-- textlint-enable ja-technical-writing/ja-no-doubled-joshi -->
+
+今回試した`autoinstall.yaml`は設定をコードで管理できる上に、覚えることも少ないため非常に便利でした。セットアップの際の参考になれば幸いです。
 
 ## 参考
 
