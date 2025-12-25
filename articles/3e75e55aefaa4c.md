@@ -9,7 +9,7 @@ publication_name: bita
 ---
 ## はじめに
 
-Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使った初期設定の自動化が追加されました。[^1]
+Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使った初期設定の自動化がUbuntuのインストーラーに追加されました。[^1]
 本記事では、私が`autoinstall.yaml`からUbuntu Desktop 24.04.3 LTSの初期設定をした際の手順と`autoinstall.yaml`の作り方を紹介します。
 
 なお、これからの文章では「Ubuntu Desktop 24.04.3 LTS」を「Ubuntu」と表記します。
