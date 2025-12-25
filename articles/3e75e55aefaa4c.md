@@ -10,7 +10,8 @@ publication_name: bita
 ## はじめに
 
 Ubuntu Desktop 24.04 LTSから、`autoinstall.yaml`を使った初期設定の自動化がUbuntuのインストーラーに追加されました。[^1]
-本記事では、私が`autoinstall.yaml`からUbuntu Desktop 24.04.3 LTSの初期設定をした際の手順と`autoinstall.yaml`の作り方を紹介します。
+
+実際に試して便利だったため、本記事では`autoinstall.yaml`からUbuntu Desktop 24.04.3 LTSの初期設定をする手順と`autoinstall.yaml`の作り方を紹介します。
 
 なお、これからの文章では「Ubuntu Desktop 24.04.3 LTS」を「Ubuntu」と表記します。
 タイトルの「半自動」は、`autoinstall.yaml`の設定項目に行くまでは手動で設定する必要があるためそのように表現しています。
@@ -224,8 +225,8 @@ Ubuntuのインストール作業をしているマシンに戻ります。
 設定はこれで以上です。
 
 ## おわりに
-<!-- textlint-disable ja-technical-writing/ja-no-doubled-joshi -->
-`autoinstall.yaml`は時間が経ってからインストールの失敗がわかり、トライアンドエラーがしにくいため、`autoinstall.yaml`には絶対に使う設定だけを書き、インストール後に自前のスクリプトで環境設定をするのがよいと感じました。
+
+<!-- textlint-disable ja-technical-writing/ja-no-doubled-joshi -->`autoinstall.yaml`は時間が経ってからインストールの失敗がわかり、トライアンドエラーがしにくいです。そのため、`autoinstall.yaml`には絶対に使う設定だけを書き、インストール後に自前のスクリプトで環境設定をするのがよいと感じました。
 <!-- textlint-enable ja-technical-writing/ja-no-doubled-joshi -->
 
 今回試した`autoinstall.yaml`は設定をコードで管理できる上に、覚えることも少ないため非常に便利でした。セットアップの際の参考になれば幸いです。
